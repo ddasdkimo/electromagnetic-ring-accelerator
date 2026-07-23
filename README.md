@@ -2,6 +2,9 @@
 
 一個開源科學玩具：鋼球在 3D 列印的環形軌道上，經過線圈加速段被電磁脈衝吸力加速，繞一圈回到原點再次加速，循環往復直到飽和速度。原理是「磁阻式線圈砲（reluctance coilgun）」的環形循環版。
 
+![概念示意圖](docs/images/concept_v1_iso.png)
+*第一版 3D 概念示意：Ø240 環軌、4 組線圈隧道（銅色）、IR 對射柱（黑）、每級驅動板（綠）與中央 ESP32-S3。模型：[hardware/concept/era_concept_v1.scad](hardware/concept/era_concept_v1.scad)*
+
 > 🚧 專案狀態：**Phase 1 可行性驗證中**——單級直線原型（試配塊已出圖、電路已定稿、韌體已就緒，等待列印與零件到貨實測）。
 
 ## 它怎麼運作
