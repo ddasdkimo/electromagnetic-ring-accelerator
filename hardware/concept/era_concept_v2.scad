@@ -65,9 +65,12 @@ module track() {
   }
 }
 
-// ---- 線圈組（bobbin 內孔 11.2、法蘭 Ø22、0.5mm×290匝 外徑約 20.8）----
-// 注意：法蘭 Ø22 的下緣落在 BORE_Z − 11 = −1.93，低於底板基準面。
-// 正式件必須在底板開沉槽或局部加厚讓法蘭坐進去（stl 的 test_v2_tunnel 已示範沉槽）。
+// ---- 線圈組（bobbin 內孔 11.2、D 形法蘭 22×17.6、0.5mm×290匝 外徑約 20.8）----
+// 圓法蘭 Ø22 的下緣落在 BORE_Z − 11 = −1.93，會伸進底板很深、逼出很薄的底膜。
+// 解法（stl 定案）：法蘭下緣截平於基準面下 0.5（z=FLANGE_CUT），沉槽只需淺淺一道，
+// 底膜回到 5.2mm。截平弦半寬 = √(11² − (BORE_Z−FLANGE_CUT)²) = 8.82 → 全寬 17.6。
+FLANGE_CUT = BASE_Z - 0.5;   // = 2.5
+
 module coil_section() {
   rotate([90,0,0]) {
     color("#7ab3d9") {
@@ -78,6 +81,8 @@ module coil_section() {
       for (s=[-1,1]) translate([0,0,s*14]) difference() {
         cylinder(d=22, h=2, center=true, $fn=64);
         cylinder(d=BORE_D, h=4, center=true, $fn=64);
+        // D 形截平：局部 −y 對應全域下方（本模組整體 rotate([90,0,0])）
+        translate([-15, -(BORE_Z-FLANGE_CUT)-20, -3]) cube([30, 20, 6]);
       }
     }
     color("#c47a35") difference() {
