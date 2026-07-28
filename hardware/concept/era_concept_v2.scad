@@ -9,7 +9,11 @@ D = C + R_CORNER;   // 直線段中心線離原點距離 = 115
 
 BALL_D  = 9.5;
 BORE_D  = 11.2;     // bobbin 內孔
-BASE_Z  = 3;        // 軌道底板厚（槽底基準面）
+BASE_Z  = 3;        // 槽底基準面（幾何基準，不隨底板厚度改變）
+// 底板全周 3→6：法蘭需要的是基準面「下方」的空間，側面加肉解不了；
+// 只加厚線圈區則底面不平、253mm 大件貼床會翹 → 全周下移，底面維持同一平面。
+// 幾何一律不動，只是底面從 z=0 下移到 z=−3。代價約 +58g，換整圈剛性。（stl 定案 2026-07-28）
+PLATE_BOT = -3;
 BALL_Z  = BASE_Z + 5.218;  // 球心高 = r√2 − 平底半寬 = 4.75×1.4142 − 1.5
 // 球在隧道內是「躺在孔底」滾，不是懸在孔心 → 孔心必須抬高半個間隙，
 // 球心才會與開放段同高。寫成 BORE_Z = BALL_Z 會讓球進隧道時跌 0.85mm。（stl 2026-07-28 抓出）
@@ -30,7 +34,7 @@ module profile(t) {
   b = rt([ 1.5, BASE_Z  ], phi);   // 平底外緣
   c = rt([-1.5, BASE_Z  ], phi);   // 平底內緣
   d = rt([-6.5, BASE_Z+5], phi);   // 內側 45° 斜面頂
-  polygon([[-10,0], [10,0], [10,13], [a[0],13], a, b, c, d, [d[0],9], [-10,9]]);
+  polygon([[-10,PLATE_BOT], [10,PLATE_BOT], [10,13], [a[0],13], a, b, c, d, [d[0],9], [-10,9]]);
 }
 
 // ---- 直線段：中央 t=0，兩端漸變到 t=1 銜接彎道 ----
@@ -90,8 +94,8 @@ module ir_gate(a, y) {
 }
 
 // ---- 組立 ----
-// 底座（圓角方形板）
-color("#3a3f46") translate([0,0,-4]) linear_extrude(4)
+// 底座（圓角方形板，讓在軌道加厚後的底面 z=PLATE_BOT 之下）
+color("#3a3f46") translate([0,0,PLATE_BOT-4]) linear_extrude(4)
   hull() for (sx=[-1,1], sy=[-1,1]) translate([sx*C, sy*C]) circle(r=R_CORNER+16, $fn=120);
 
 track();
@@ -102,11 +106,13 @@ for (a = [0,90,180,270]) {
 }
 ir_gate(0, -34);                        // 基準級的第 2 道（測速）
 
-// 集中驅動板：4× MOSFET + 4700µF×4 並聯 + XIAO ESP32-S3
-color("#2e7d4f") translate([0,0,1]) cube([64,44,2], center=true);
-for (i=[-1.5:1:1.5]) color("#1a1a1a") translate([i*13, 15, 4]) cube([7,4,9], center=true);
-for (i=[-1.5:1:1.5]) color("#4a4a52") translate([i*13, -2, 8]) cylinder(d=13, h=14, center=true, $fn=32);
-color("#37474f") translate([0,-17,4]) cube([22,10,4], center=true);
+// 集中驅動板：4× MOSFET + 4700µF×4 並聯 + XIAO ESP32-S3（坐在底座上）
+translate([0,0,PLATE_BOT]) {
+  color("#2e7d4f") translate([0,0,1]) cube([64,44,2], center=true);
+  for (i=[-1.5:1:1.5]) color("#1a1a1a") translate([i*13, 15, 4]) cube([7,4,9], center=true);
+  for (i=[-1.5:1:1.5]) color("#4a4a52") translate([i*13, -2, 8]) cylinder(d=13, h=14, center=true, $fn=32);
+  color("#37474f") translate([0,-17,4]) cube([22,10,4], center=true);
+}
 
 // 鋼球在彎道上（球心高度與徑向位置和直線段完全相同）
 rotate([0,0,45]) translate([C*sqrt(2) + R_CORNER, 0, BALL_Z])
