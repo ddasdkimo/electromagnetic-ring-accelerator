@@ -1,5 +1,5 @@
 // 電磁環形加速器 — 方案 B（v2 Banked-Square 4）概念示意圖
-// 與 v1 差異：圓角方形（線圈在直線段、入口角 0°）、彎道傾斜賽道 65°/35°、Ø9.5 小球
+// 與 v1 差異：圓角方形（線圈在直線段、入口角 0°）、彎道傾斜賽道 65°/25°、Ø9.5 小球
 // 渲染：openscad -o concept_v2.png --preview era_concept_v2.scad
 
 STRAIGHT = 60;      // 直線段長（中間 30 放線圈，兩端各 15 為 banking 漸變段）
@@ -8,9 +8,12 @@ C = STRAIGHT/2;     // 彎心座標 (±30, ±30)
 D = C + R_CORNER;   // 直線段中心線離原點距離 = 115
 
 BALL_D  = 9.5;
+BORE_D  = 11.2;     // bobbin 內孔
 BASE_Z  = 3;        // 軌道底板厚（槽底基準面）
 BALL_Z  = BASE_Z + 5.218;  // 球心高 = r√2 − 平底半寬 = 4.75×1.4142 − 1.5
-BORE_Z  = BALL_Z;   // 隧道孔心與球心同高（零落差）
+// 球在隧道內是「躺在孔底」滾，不是懸在孔心 → 孔心必須抬高半個間隙，
+// 球心才會與開放段同高。寫成 BORE_Z = BALL_Z 會讓球進隧道時跌 0.85mm。（stl 2026-07-28 抓出）
+BORE_Z  = BALL_Z + (BORE_D - BALL_D)/2;   // = 8.218 + 0.85 = 9.068
 BANK    = 20;       // 彎道傾斜角（外側面 45+20=65°、內側面 45−20=25°）
 
 NSEG = 15;          // banking 漸變段分片數（示意用；正式件應以連續掃掠生成）
@@ -59,16 +62,18 @@ module track() {
 }
 
 // ---- 線圈組（bobbin 內孔 11.2、法蘭 Ø22、0.5mm×290匝 外徑約 20.8）----
+// 注意：法蘭 Ø22 的下緣落在 BORE_Z − 11 = −1.93，低於底板基準面。
+// 正式件必須在底板開沉槽或局部加厚讓法蘭坐進去（stl 的 test_v2_tunnel 已示範沉槽）。
 module coil_section() {
   rotate([90,0,0]) {
     color("#7ab3d9") {
       difference() {
-        cylinder(d=12.8, h=30, center=true, $fn=64);
-        cylinder(d=11.2, h=32, center=true, $fn=64);
+        cylinder(d=BORE_D+1.6, h=30, center=true, $fn=64);
+        cylinder(d=BORE_D, h=32, center=true, $fn=64);
       }
       for (s=[-1,1]) translate([0,0,s*14]) difference() {
         cylinder(d=22, h=2, center=true, $fn=64);
-        cylinder(d=11.2, h=4, center=true, $fn=64);
+        cylinder(d=BORE_D, h=4, center=true, $fn=64);
       }
     }
     color("#c47a35") difference() {
