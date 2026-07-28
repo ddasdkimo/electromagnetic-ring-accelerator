@@ -22,6 +22,9 @@ BOB_ID  = 11.2; BOB_WALL = 0.8; BOB_OD = BOB_ID+2*BOB_WALL;  // 12.8
 BOB_LEN = 30; FLANGE_D = 22; FLANGE_T = 2;
 BORE_Z  = BALL_Z + (BOB_ID-BALL_D)/2;   // 9.068（見上）
 IR_D    = 3.5; IR_Z = 8;
+Z_CUT   = 2.5;   // D形法蘭截平面的絕對高（基準3-0.5）。繞線鬆脫備案：改1.5
+                 // （無擋線角 94.2°→80.8°、隧道底膜 5.2→4.2；下限≈0.12）
+FL_FLAT = BORE_Z - Z_CUT;   // 截平距 bobbin 軸心 6.568
 
 NSEG = 30;   // 漸變段 15mm 分 30 片（0.5mm/片，比概念圖細一倍）
 
@@ -68,8 +71,8 @@ module bobbin() {
         // 出線孔（兩法蘭）
         for (z=[FLANGE_T/2, BOB_LEN-FLANGE_T/2])
             translate([BOB_OD/2+2.5, 0, z]) cylinder(d=1.6, h=FLANGE_T+2, center=true);
-        // D 形法蘭：下緣截平於軸心下 6.57（= 底板基準下 0.5，膜厚問題根治）
-        translate([-(FLANGE_D/2+1), -6.57-FLANGE_D, -1]) cube([FLANGE_D+2, FLANGE_D, BOB_LEN+2]);
+        // D 形法蘭：下緣截平於軸心下 FL_FLAT（膜厚問題根治；擋線靠張力非法蘭——ERA 核定）
+        translate([-(FLANGE_D/2+1), -FL_FLAT-FLANGE_D, -1]) cube([FLANGE_D+2, FLANGE_D, BOB_LEN+2]);
     }
 }
 
@@ -92,9 +95,9 @@ module tunnel_test() {
         // 巢座肋開 U 巢（Ø12.9 貼管）
         for (sy=[-11.5, 11.5]) translate([0, sy, 3+BORE_Z])
             rotate([90,0,0]) cylinder(d=BOB_OD+0.3, h=5, center=true);
-        // 法蘭淺沉槽（D 形法蘭只低於基準 0.5 → 槽深到基準下 0.8，底膜厚 5.2）
-        for (sy=[-15+FLANGE_T/2+0.1, 15-FLANGE_T/2-0.1]) translate([-12, sy-(FLANGE_T+0.7)/2, 3+3-0.8])
-            cube([24, FLANGE_T+0.7, 12]);
+        // 法蘭淺沉槽（槽底 = Z_CUT-0.3 餘裕；Z_CUT=2.5 時底膜 5.2、1.5 時 4.2）
+        for (sy=[-15+FLANGE_T/2+0.1, 15-FLANGE_T/2-0.1]) translate([-12, sy-(FLANGE_T+0.7)/2, 3+Z_CUT-0.3])
+            cube([24, FLANGE_T+0.7, 14]);
         // 兩側牆在隧道區開窗（放線圈外徑 ~20.8）
         translate([-11, -12, 3+6]) cube([22, 24, 12]);
         // IR：牆上 Ø3.5 橫向對穿（z = 3+IR_Z）＋外側 x±13 直立管座
