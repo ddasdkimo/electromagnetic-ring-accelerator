@@ -31,6 +31,7 @@
 
 - [RESEARCH.md](RESEARCH.md) — 原理研究與設計要點
 - [PLAN.md](PLAN.md) — 定案方案與階段規劃
+- [docs/design-v2-alt.md](docs/design-v2-alt.md) — 方案 B：獨立重新推導的替代設計（傾斜賽道、小球、直線段線圈）與 v1 對照
 - [coil-and-driver-spec.md](coil-and-driver-spec.md) — 線圈估算與驅動電路規格（含電路圖）
 - [firmware/p1_single_stage/](firmware/p1_single_stage/) — 單級驗證韌體（IR 觸發、脈寬調參、測速、安全保護）
 - [docs/log/](docs/log/) — 開發日誌（build log）

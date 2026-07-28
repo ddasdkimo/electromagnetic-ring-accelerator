@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="620" viewBox="0 0 900 620" font-family="PingFang TC, Hiragino Sans, Helvetica, sans-serif">
+  <defs>
+    <marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 z" fill="#d64545"/>
+    </marker>
+    <marker id="ag" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 z" fill="#666"/>
+    </marker>
+  </defs>
+
+  <rect width="900" height="620" fill="#fdfdfa"/>
+  <text x="450" y="34" text-anchor="middle" font-size="19" font-weight="600" fill="#222">彎道剖面對照：側向承載決定「乾淨滾動」的速度上限</text>
+  <text x="450" y="56" text-anchor="middle" font-size="13" fill="#666">球一旦爬上外側支撐面，接觸就從滾動（μ≈0.02）變成滑動（μ≈0.15）—— 摩擦損失跳 7 倍</text>
+
+  <!-- ============ v1：對稱 45° ============ -->
+  <text x="210" y="94" text-anchor="middle" font-size="16" font-weight="600" fill="#333">v1　對稱 45° V 槽</text>
+  <text x="210" y="114" text-anchor="middle" font-size="12.5" fill="#777">Ø12.7 球 · 彎道 R=120mm</text>
+
+  <path d="M 72,380 L 348,380 L 348,176 L 294,176 L 294,284 L 234,344 L 186,344 L 126,284 L 126,260 L 72,260 Z"
+        fill="#d8d8de" stroke="#8a8a95" stroke-width="1.6"/>
+  <circle cx="210" cy="260.2" r="76.2" fill="#cfd6dd" stroke="#8a8a95" stroke-width="1.4" opacity="0.9"/>
+  <circle cx="210" cy="260.2" r="2.8" fill="#444"/>
+
+  <path d="M 234,344 L 294,284" stroke="#d64545" stroke-width="2.8" fill="none"/>
+  <path d="M 234,344 L 300,344" stroke="#bbb" stroke-width="1" stroke-dasharray="4,3"/>
+  <path d="M 276,344 A 42,42 0 0,0 263.7,314.3" fill="none" stroke="#d64545" stroke-width="1.3"/>
+  <text x="286" y="330" font-size="14" font-weight="600" fill="#d64545">45°</text>
+  <path d="M 186,344 L 126,284" stroke="#7a7a85" stroke-width="2.2" fill="none"/>
+  <text x="140" y="330" font-size="12.5" fill="#7a7a85">45°</text>
+
+  <line x1="210" y1="260.2" x2="210" y2="326" stroke="#666" stroke-width="2" marker-end="url(#ag)"/>
+  <text x="216" y="318" font-size="12" fill="#666">mg</text>
+  <line x1="210" y1="260.2" x2="276" y2="260.2" stroke="#666" stroke-width="2" marker-end="url(#ag)"/>
+  <text x="234" y="252" font-size="12" fill="#666">m·a</text>
+  <line x1="210" y1="260.2" x2="276" y2="326" stroke="#d64545" stroke-width="2.8" marker-end="url(#ah)"/>
+
+  <text x="210" y="438" text-anchor="middle" font-size="13.5" fill="#333">側向承載　<tspan font-weight="700" fill="#d64545">1.00 g</tspan>　（tan 45°）</text>
+  <text x="210" y="462" text-anchor="middle" font-size="13.5" fill="#333">乾淨滾動上限　<tspan font-weight="700" fill="#d64545">1.08 m/s</tspan></text>
+  <text x="210" y="486" text-anchor="middle" font-size="12" fill="#888">合力恰好貼齊 45° 面 → 再快就爬牆</text>
+
+  <!-- ============ v2：整槽繞球心旋轉 20° ============ -->
+  <text x="670" y="94" text-anchor="middle" font-size="16" font-weight="600" fill="#333">v2　整個槽繞球心傾斜 20°</text>
+  <text x="670" y="114" text-anchor="middle" font-size="12.5" fill="#777">Ø9.5 球 · 彎道 R=85mm · 槽夾角維持 90°</text>
+
+  <path d="M 550,380 L 790,380 L 790,224 L 744.2,224 L 744.2,257.2 L 708.3,334.1 L 674.5,346.4 L 597.6,310.5 L 597.6,272 L 550,272 Z"
+        fill="#d8d8de" stroke="#8a8a95" stroke-width="1.6"/>
+  <circle cx="670" cy="281.4" r="57" fill="#cfd6dd" stroke="#8a8a95" stroke-width="1.4" opacity="0.9"/>
+  <circle cx="670" cy="281.4" r="2.8" fill="#444"/>
+
+  <path d="M 708.3,334.1 L 744.2,257.2" stroke="#2e8b57" stroke-width="2.8" fill="none"/>
+  <path d="M 708.3,334.1 L 774,334.1" stroke="#bbb" stroke-width="1" stroke-dasharray="4,3"/>
+  <path d="M 750.3,334.1 A 42,42 0 0,0 726,297" fill="none" stroke="#2e8b57" stroke-width="1.3"/>
+  <text x="762" y="318" font-size="14" font-weight="600" fill="#2e8b57">65°</text>
+  <path d="M 674.5,346.4 L 597.6,310.5" stroke="#7a7a85" stroke-width="2.2" fill="none"/>
+  <text x="606" y="338" font-size="12.5" fill="#7a7a85">25°</text>
+
+  <line x1="670" y1="281.4" x2="670" y2="332" stroke="#666" stroke-width="2" marker-end="url(#ag)"/>
+  <text x="676" y="324" font-size="12" fill="#666">mg</text>
+  <line x1="670" y1="281.4" x2="778" y2="281.4" stroke="#666" stroke-width="2" marker-end="url(#ag)"/>
+  <text x="704" y="273" font-size="12" fill="#666">m·a　(2.14×)</text>
+  <line x1="670" y1="281.4" x2="778" y2="332" stroke="#d64545" stroke-width="2.8" marker-end="url(#ah)"/>
+
+  <text x="670" y="438" text-anchor="middle" font-size="13.5" fill="#333">側向承載　<tspan font-weight="700" fill="#2e8b57">2.14 g</tspan>　（tan 65°）</text>
+  <text x="670" y="462" text-anchor="middle" font-size="13.5" fill="#333">乾淨滾動上限　<tspan font-weight="700" fill="#2e8b57">1.34 m/s</tspan></text>
+  <text x="670" y="486" text-anchor="middle" font-size="12" fill="#888">合力仍在 65° 面法線內 → 維持滾動</text>
+  <text x="670" y="506" text-anchor="middle" font-size="12" fill="#2e8b57">球心高度與直線段完全相同 → 過渡零高差</text>
+
+  <!-- 底部結論 -->
+  <line x1="60" y1="532" x2="840" y2="532" stroke="#ddd" stroke-width="1"/>
+  <text x="450" y="558" text-anchor="middle" font-size="13.5" fill="#333">
+    臨界條件　<tspan font-family="ui-monospace, Menlo, monospace" font-size="13">a_lat = g·tan(θ外)</tspan>　→　<tspan font-family="ui-monospace, Menlo, monospace" font-size="13">v_max = √(g·tanθ·R)</tspan>
+  </text>
+  <text x="450" y="582" text-anchor="middle" font-size="12.5" fill="#777">
+    改動成本為零，只是把剖面多邊形的頂點繞球心轉 20°。v2 的彎道半徑比 v1 更小，速度上限卻更高。
+  </text>
+  <text x="450" y="604" text-anchor="middle" font-size="12" fill="#999">
+    註：一圈的側向摩擦損失 W = 2π·μ·m·v²，與軌道半徑及形狀無關 —— 能改善的只有 μ（靠 banking）與 m（靠小球）。
+  </text>
+</svg>
