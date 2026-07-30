@@ -9,7 +9,7 @@
 // 另：法蘭 Ø22 低於軌道底板基準 1.93mm → 試配塊底板局部加厚 3
 //   （正式件需同樣處理：局部加厚或開法蘭沉槽）
 // ============================================================
-part = "curve"; // curve | bobbin | tunnel
+part = "combo"; // combo | bobbin  （curve/tunnel 已合併為 combo，基準統一底板6）
 
 $fn = 128;
 
@@ -115,3 +115,50 @@ module tunnel_test() {
 if (part=="curve")  curve_test();
 if (part=="bobbin") bobbin();
 if (part=="tunnel") tunnel_test();
+
+
+// ============================================================
+// (合併版) combo：彎道45°→漸變15→直線60（含隧道巢座+IR）一體件
+// 基準統一：底板全周 6（=正式件定案），球心 11.218、孔心 12.068
+// 理由（ERA 建議核定）：正式件一體無接縫，「過渡零落差」不能用
+// 拼接驗——接縫誤差會污染核心驗證項。bobbin 維持獨立（繞線後裝）。
+// ============================================================
+module combo_test() {
+    difference() {
+        union() {
+            // 加厚底（直線+漸變）
+            translate([-10, 0, 0]) cube([20, 75, 3]);
+            // 直線 t=0（y 0..60）
+            translate([0,0,3]) rotate([90,0,0]) translate([0,0,-60]) linear_extrude(60.01) profile(0);
+            // 漸變 y60..75
+            for (i=[0:NSEG-1]) {
+                t = i/(NSEG-1);
+                translate([0,0,3]) rotate([90,0,0]) translate([0,0,-(60+(i+1)*15/NSEG)])
+                    linear_extrude(15/NSEG+0.02) profile(t);
+            }
+            // 彎道 45°（含自己的加厚底）
+            translate([-R_C, 75, 0]) rotate_extrude(angle=45, $fn=200) union() {
+                translate([R_C, 3]) profile(1);
+                translate([R_C-10, 0]) square([20, 3.01]);
+            }
+            // 巢座肋 ×2（隧道中心 y=30）
+            for (sy=[30-11, 30+7]) translate([-10, sy, 0]) cube([20, 4, 3+BORE_Z]);
+            // IR 管座翼板（y 6..14）
+            translate([-16, 6, 0]) cube([32, 8, 3]);
+        }
+        // 隧道包絡 Ø13.4（y 30±19）
+        translate([0, 30, 3+BORE_Z]) rotate([90,0,0]) cylinder(d=13.4, h=38, center=true);
+        // 巢座 U 巢
+        for (sy=[30-11.5, 30+11.5]) translate([0, sy, 3+BORE_Z])
+            rotate([90,0,0]) cylinder(d=BOB_OD+0.3, h=5, center=true);
+        // 法蘭淺沉槽（D 形；槽底 Z_CUT-0.3）
+        for (sy=[30-15+FLANGE_T/2+0.1, 30+15-FLANGE_T/2-0.1])
+            translate([-12, sy-(FLANGE_T+0.7)/2, 3+Z_CUT-0.3]) cube([24, FLANGE_T+0.7, 14]);
+        // 側牆開窗（線圈區）
+        translate([-11, 30-12, 3+6]) cube([22, 24, 12]);
+        // IR：牆上 Ø3.5 橫穿（y=10, z=基準6+5=11）＋ x±13 直立管座
+        translate([-16, 10, 3+IR_Z]) rotate([0,90,0]) cylinder(d=IR_D, h=32);
+        for (sx=[-13,13]) translate([sx, 10, -1]) cylinder(d=IR_D, h=3+IR_Z+2.75);
+    }
+}
+if (part=="combo") combo_test();
