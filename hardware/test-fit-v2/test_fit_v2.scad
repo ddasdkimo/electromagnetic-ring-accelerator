@@ -9,7 +9,7 @@
 // 另：法蘭 Ø22 低於軌道底板基準 1.93mm → 試配塊底板局部加厚 3
 //   （正式件需同樣處理：局部加厚或開法蘭沉槽）
 // ============================================================
-part = "combo"; // combo | bobbin | joint_a | joint_b
+part = "combo"; // combo | bobbin | joint_a | joint_b | ir
 
 $fn = 128;
 
@@ -223,3 +223,51 @@ module joint_b() {   // y 30..60 － 底部燕尾槽
 }
 if (part=="joint_a") joint_a();
 if (part=="joint_b") joint_b();
+
+
+// ============================================================
+// IR 水平夾座（ERA 2026-07-31 核定：感測方案不變，5 對對射、
+// 光路水平橫穿、束高 z=3+IR_Z=11＝球心 11.218 略下方）
+// 舊做法「垂直插孔 + 水平光路」裝不了——3mm 圓柱管的光軸就是管軸。
+// 改：元件躺進水平 U 槽，從上方壓入，槽口收窄 CLIP_W 靠彈性卡住
+// （不賭尺寸公差，走壓潰/卡入路線）。
+// ============================================================
+IR_CLIP_H = 5;      // 立柱厚（x 向）＝夾持長度，對 3mm 元件本體
+IR_CLIP_W = 2.8;    // 槽口寬（元件 Ø3.0 → 0.2 過盈卡入）
+IR_X      = 13;     // 立柱中心 x（軌道外緣 ±10 之外）
+IR_LED_D  = 3.0;    // 元件實際外徑
+IR_SLOT_D = 3.2;    // 槽徑（0.2 讓元件落得到底）
+IR_BEAM_Z = 3 + IR_Z;                              // 11：光路束高
+// 元件是「躺在槽底」不是懸在槽心 → 槽心要抬半個間隙，元件軸心才落在束高。
+// 與隧道孔心 BORE_Z = 球心 + (孔徑−球徑)/2 完全同一個道理。
+IR_SLOT_Z = IR_BEAM_Z + (IR_SLOT_D - IR_LED_D)/2;  // 11.1
+IR_CLIP_Z = IR_SLOT_Z + IR_SLOT_D/2 + 1.3;         // 14：頂面高於槽頂，卡入頸才完整
+
+module ir_clip(sx) {
+    translate([sx*IR_X, 0, 0]) difference() {
+        translate([-IR_CLIP_H/2, -3, 0]) cube([IR_CLIP_H, 6, IR_CLIP_Z]);
+        translate([0, 0, IR_SLOT_Z]) rotate([0,90,0])
+            cylinder(d=IR_SLOT_D, h=IR_CLIP_H+4, center=true);      // 管槽
+        translate([-IR_CLIP_H/2-2, -IR_CLIP_W/2, IR_SLOT_Z])
+            cube([IR_CLIP_H+4, IR_CLIP_W, 8]);                      // 上開口（收窄卡入）
+    }
+}
+
+// 試片：20mm 軌道段（可放球）＋兩側水平夾座＋牆上光路孔
+// 驗：元件壓入卡不卡得住、兩側光軸是否同高對準、球放上去能否確實遮斷
+module ir_test() {
+    difference() {
+        union() {
+            translate([-10, 0, 0]) cube([20, 20, 3]);                // 加厚底
+            translate([0,0,3]) rotate([90,0,0]) translate([0,0,-20]) linear_extrude(20.01) profile(0);
+            translate([-16, 7, 0]) cube([32, 6, 3]);                 // 夾座翼板
+            translate([0,10,0]) ir_clip(-1);
+            translate([0,10,0]) ir_clip( 1);
+        }
+        // 光路：Ø3.5 水平橫穿兩側牆（外牆頂 16、內牆頂 12，束高 11 兩側都要穿）
+        // 止於軌道外緣 ±10.5，**不可貫穿立柱**——Ø3.5 孔底 9.25 低於 Ø3.2 槽底 9.5，
+        // 打穿的話元件會落到孔底、光軸偏低 0.25（已實測過一次）
+        translate([-10.5, 10, IR_BEAM_Z]) rotate([0,90,0]) cylinder(d=IR_D, h=21);
+    }
+}
+if (part=="ir") ir_test();

@@ -6,7 +6,7 @@
 // 渲染：
 //   openscad -o preview_iso.png  --preview --autocenter --viewall --imgsize=1600,1200 \
 //            -D 'view="iso"' preview_v2.scad
-// view = iso | top | corner | section | testfit
+// view = iso | top | corner | section | explode | testfit
 // ============================================================
 view = "iso";
 $fn = 64;
@@ -61,8 +61,11 @@ module tun_cut_at() {
     }
   }
   translate([DD-11, -12, PLATE+6]) cube([22, 24, 12]);
-  // IR 對射（線圈外側）
-  translate([DD-16, 20, PLATE+IR_Z]) rotate([0,90,0]) cylinder(d=IR_D, h=32);
+}
+// IR 光路：止於軌道外緣 ±10.5，不可打進夾座立柱
+// （Ø3.5 孔底比 Ø3.2 槽底低 0.25，打穿的話元件落到孔底、光軸就偏了）
+module ir_beam_hole(y) {
+  translate([DD-10.5, y, PLATE+IR_Z]) rotate([0,90,0]) cylinder(d=IR_D, h=21);
 }
 
 // ---- 半段直線：y 0..30（0..15 為 t=0 線圈區，15..30 漸變）----
@@ -87,13 +90,16 @@ module corner90() {
 
 // ---- L 形角件：半直線 + 彎道 90° + 鏡射半直線 ----
 // 接縫落在 (±115, 0) / (0, ±115) —— 也就是每個線圈隧道的正中央
-module quarter() {
+// datum_gate：基準級多開一道測速孔（ERA：每級 1 道 + 基準級加 1 道 = 5 對）
+module quarter(datum_gate=false) {
   difference() {
     union() {
       half_straight(); corner90(); mirror([1,-1,0]) half_straight();
       tun_add_half();  mirror([1,-1,0]) tun_add_half();
     }
     tun_cut_at(); mirror([1,-1,0]) tun_cut_at();
+    ir_beam_hole(20);
+    if (datum_gate) ir_beam_hole(27);
   }
 }
 
@@ -121,7 +127,7 @@ module bobbin_coil() {
 QCOL = ["#c9ccd4", "#9aa7bd", "#b9c4b0", "#c6b8a8"];   // 4 角件異色：看得出分件與接縫位置
 module track_all(ex=0) {
   for (i = [0:3]) rotate([0,0,i*90])
-    translate([ex*0.7071, ex*0.7071, 0]) color(QCOL[i]) quarter();
+    translate([ex*0.7071, ex*0.7071, 0]) color(QCOL[i]) quarter(i==0);
 }
 module coils_all()  { for (i=[0:3]) rotate([0,0,i*90]) bobbin_coil(); }
 module ball_on_curve() {
@@ -136,10 +142,24 @@ module driver_board() {                                    // 集中驅動板（
     color("#37474f") translate([0,-19,4]) cube([22,10,4], center=true);
   }
 }
+// IR 水平夾座（ERA 2026-07-31 核定：5 對對射、束高 z=11、光路水平橫穿）
+// 元件躺槽底，槽心抬半個間隙 → 軸心正好落在束高（同隧道孔心的道理）
+IR_BEAM = PLATE + IR_Z;          // 11
+IR_SLOT = IR_BEAM + 0.1;         // 槽心 11.1（槽 Ø3.2 對元件 Ø3.0）
+module ir_gate(y) {
+  for (sf=[-1,1]) translate([DD + sf*13, y, 0]) {
+    color("#b6bcc4") difference() {
+      translate([-2.5, -3, 0]) cube([5, 6, 14]);
+      translate([0,0,IR_SLOT]) rotate([0,90,0]) cylinder(d=3.2, h=9, center=true);
+      translate([-4.5, -1.4, IR_SLOT]) cube([9, 2.8, 8]);            // 上開口，壓入卡住
+    }
+    translate([0,0,IR_BEAM]) rotate([0,90,0])
+      color("#2b2b2b") cylinder(d=3, h=5, center=true);
+  }
+}
 module ir_pairs() {
-  for (i=[0:3]) rotate([0,0,i*90]) for (sf=[-1,1])
-    translate([DD + sf*13, 20, PLATE+IR_Z]) rotate([0,90,0])
-      color("#2b2b2b") cylinder(d=3.2, h=5, center=true);
+  for (i=[0:3]) rotate([0,0,i*90]) ir_gate(20);                      // 每級 1 道觸發
+  ir_gate(27);                                                       // 基準級第 2 道（測速）
 }
 
 module scene_full() { track_all(); coils_all(); ball_on_curve(); ir_pairs(); driver_board(); }
@@ -152,6 +172,7 @@ if (view == "testfit") {
   translate([60, 0, 0])   color("#9aa7bd") import("test_v2_joint_a.stl");
   translate([60, 45, 0])  color("#b9c4b0") import("test_v2_joint_b.stl");
   translate([100, 20, 0]) color("#8fc7e8") import("test_v2_bobbin.stl");
+  translate([-45, 5, 0])  color("#c6b8a8") import("test_v2_ir.stl");
 }
 
 // 分解圖：4 角件沿對角外拉、線圈組垂直抬起（＝實際組裝動作：繞好線後垂直落入 D 槽）
