@@ -9,7 +9,7 @@
 // 另：法蘭 Ø22 低於軌道底板基準 1.93mm → 試配塊底板局部加厚 3
 //   （正式件需同樣處理：局部加厚或開法蘭沉槽）
 // ============================================================
-part = "combo"; // combo | bobbin  （curve/tunnel 已合併為 combo，基準統一底板6）
+part = "combo"; // combo | bobbin | joint_a | joint_b
 
 $fn = 128;
 
@@ -54,7 +54,7 @@ module curve_test() {
             linear_extrude(15/NSEG+0.02) profile(t);
     }
     // 彎道 45° t=1
-    translate([-R_C, 40, 0]) rotate_extrude(angle=45, $fn=200)
+    translate([-R_C, 40, 0]) rotate_extrude(angle=45, $fn=400)
         translate([R_C, 0]) profile(1);
 }
 
@@ -137,28 +137,89 @@ module combo_test() {
                     linear_extrude(15/NSEG+0.02) profile(t);
             }
             // 彎道 45°（含自己的加厚底）
-            translate([-R_C, 75, 0]) rotate_extrude(angle=45, $fn=200) union() {
+            translate([-R_C, 75, 0]) rotate_extrude(angle=45, $fn=400) union() {
                 translate([R_C, 3]) profile(1);
                 translate([R_C-10, 0]) square([20, 3.01]);
             }
-            // 巢座肋 ×2（隧道中心 y=30）
-            for (sy=[30-11, 30+7]) translate([-10, sy, 0]) cube([20, 4, 3+BORE_Z]);
+            // 隧道座（v3 共用：法蘭 D 槽定位）
+            tun_add(30);
             // IR 管座翼板（y 6..14）
             translate([-16, 6, 0]) cube([32, 8, 3]);
         }
-        // 隧道包絡 Ø13.4（y 30±19）
-        translate([0, 30, 3+BORE_Z]) rotate([90,0,0]) cylinder(d=13.4, h=38, center=true);
-        // 巢座 U 巢
-        for (sy=[30-11.5, 30+11.5]) translate([0, sy, 3+BORE_Z])
-            rotate([90,0,0]) cylinder(d=BOB_OD+0.3, h=5, center=true);
-        // 法蘭淺沉槽（D 形；槽底 Z_CUT-0.3）
-        for (sy=[30-15+FLANGE_T/2+0.1, 30+15-FLANGE_T/2-0.1])
-            translate([-12, sy-(FLANGE_T+0.7)/2, 3+Z_CUT-0.3]) cube([24, FLANGE_T+0.7, 14]);
-        // 側牆開窗（線圈區）
-        translate([-11, 30-12, 3+6]) cube([22, 24, 12]);
+        tun_cut(30);
         // IR：牆上 Ø3.5 橫穿（y=10, z=基準6+5=11）＋ x±13 直立管座
         translate([-16, 10, 3+IR_Z]) rotate([0,90,0]) cylinder(d=IR_D, h=32);
         for (sx=[-13,13]) translate([sx, 10, -1]) cylinder(d=IR_D, h=3+IR_Z+2.75);
     }
 }
 if (part=="combo") combo_test();
+
+
+// ============================================================
+// 接縫試配對（David 需求 2026-07-31：軌道分件卡榫）
+// 概念：正式件切 4 個 L 形角件，接縫全部落在「線圈隧道正中央」——
+// 球在隧道內騎 bobbin 內孔（單一件），全程摸不到軌道接縫。
+// 接合 = 底部燕尾搭接舌（z0..3、план燕尾、垂直落入）＋bobbin 本身兼對位銷。
+// joint_a + joint_b 組起來 = 一段帶接縫的隧道直線段，供實測驗證。
+// ============================================================
+DT_NECK=10; DT_HEAD=16; DT_LEN=9; DT_CL=0.4;   // 燕尾（FDM 鐵律間隙）
+
+// ---- 隧道座共用（v3：線圈 Ø20.8 有位、法蘭 D 槽定位，繞線區零遮擋）----
+CRADLE_T = 2.7; COIL_OD = 20.8;
+module tun_add(yc) {   // 法蘭座板 ×2（@ yc±14）
+    for (sf=[-1,1]) translate([-10, yc+sf*14-CRADLE_T/2, 0]) cube([20, CRADLE_T, 13]);
+}
+module tun_cut(yc) {
+    // 線圈包絡：長度須蓋滿繞線區 26（+0.2/端），否則線圈端撞座板（法蘭讓位已不再兼差挖這裡）
+    translate([0, yc, 3+BORE_Z]) rotate([90,0,0]) cylinder(d=COIL_OD+0.8, h=26.4, center=true);
+    // 光管讓位：長度＝bobbin 光管 30 +0.3/端。**切勿放長**——多切一段就是一段
+    // 「V 槽沒了、bore 還沒開始」的無支撐區，球會在隧道進出口跌落
+    // （實測：舊值 h=38 兩端各留 4mm 空檔 → 球心掉到 10.776，−0.44mm）
+    translate([0, yc, 3+BORE_Z]) rotate([90,0,0]) cylinder(d=13.4, h=BOB_LEN+0.6, center=true);
+    // 法蘭 D 座槽：垂直落入通道（弦寬+0.3/側）＋圓弧讓位；D 平面落 z5.5 = 基準
+    for (sf=[-1,1]) {
+        translate([-9.12, yc+sf*14-(CRADLE_T+0.7)/2, 3+Z_CUT]) cube([18.24, CRADLE_T+0.7, 20]);
+        // 圓弧讓位只切基準面以上：法蘭 D 面就落在 z=3+Z_CUT，底下不必讓
+        // （切成整圓會把座板根部底膜啃到 0.75mm——上次回報 ERA 的 5.2mm 是錯的）
+        intersection() {
+            translate([0, yc+sf*14, 3+BORE_Z]) rotate([90,0,0])
+                cylinder(d=FLANGE_D+0.6, h=CRADLE_T+0.7, center=true);
+            translate([-15, yc+sf*14-3, 3+Z_CUT]) cube([30, 6, 20]);
+        }
+    }
+    translate([-11, yc-12, 3+6]) cube([22, 24, 12]);                                          // 側牆開窗
+}
+
+
+module joint_straight() {   // 完整 60 直線含隧道特徵（接縫將落 y=30）
+    difference() {
+        union() {
+            translate([-10, 0, 0]) cube([20, 60, 3]);
+            translate([0,0,3]) rotate([90,0,0]) translate([0,0,-60]) linear_extrude(60.01) profile(0);
+            tun_add(30);
+        }
+        tun_cut(30);
+    }
+}
+module dovetail_plan(cl=0) {   // 平面燕尾（+y 指向）
+    polygon([[-DT_NECK/2-cl, -1],[DT_NECK/2+cl, -1],
+             [DT_NECK/2+cl, 0.01],[DT_HEAD/2+cl, DT_LEN+cl],
+             [-DT_HEAD/2-cl, DT_LEN+cl],[-DT_NECK/2-cl, 0.01]]);
+}
+module joint_a() {   // y 0..30 ＋ 底部燕尾舌（伸入 B；舌需同受線圈包絡刀）
+    difference() {
+        union() {
+            intersection() { joint_straight(); translate([-11,-1,-1]) cube([22, 31, 30]); }
+            translate([0, 30, 0]) linear_extrude(3) dovetail_plan(0);
+        }
+        tun_cut(30);
+    }
+}
+module joint_b() {   // y 30..60 － 底部燕尾槽
+    difference() {
+        intersection() { joint_straight(); translate([-11, 30, -1]) cube([22, 31, 30]); }
+        translate([0, 30, -1]) linear_extrude(5) dovetail_plan(DT_CL);
+    }
+}
+if (part=="joint_a") joint_a();
+if (part=="joint_b") joint_b();

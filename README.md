@@ -35,6 +35,7 @@
 - [coil-and-driver-spec.md](coil-and-driver-spec.md) — 線圈估算與驅動電路規格（含電路圖）
 - [firmware/p1_single_stage/](firmware/p1_single_stage/) — 單級驗證韌體（IR 觸發、脈寬調參、測速、安全保護）
 - [docs/log/](docs/log/) — 開發日誌（build log）
+- [hardware/preview/](hardware/preview/) — 方案 B 正式件預覽圖（四角件配色、分解圖、隧道剖切）
 
 ## 路線圖
 
